@@ -3,14 +3,19 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime, timedelta
 
-
 def simple_test():
+    # Criação do hook utilizando o ID da conexão configurado no Airflow
     hook = S3Hook(aws_conn_id='AWS-Airflow')
-    print("Connection established:", hook.conn_id)
+    print("Conexão com S3 estabelecida.")
+    
+    # Listando os buckets disponíveis na conexão S3
     buckets = hook.list_buckets()
-    for bucket in buckets:
-        print(f"Bucket Name: {bucket.name}")
-
+    if buckets:
+        print("Buckets encontrados:")
+        for bucket in buckets:
+            print(f"Bucket Name: {bucket['Name']}")
+    else:
+        print("Nenhum bucket encontrado.")
 
 default_args = {
     'owner': 'airflow',
@@ -29,7 +34,7 @@ with DAG(
     schedule_interval=None,
     catchup=False,
 ) as dag:
-
+    
     test_task = PythonOperator(
         task_id='test_s3_connection',
         python_callable=simple_test
